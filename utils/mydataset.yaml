@@ -1,0 +1,5 @@
+train: /content/drive/MyDrive/RSNA_Yolov6_Bbox/dataset/images/train
+val: /content/drive/MyDrive/RSNA_Yolov6_Bbox/dataset/images/train
+is_coco: False
+nc: 1
+names: ['Fracture']
