@@ -40,7 +40,7 @@ n_slice_per_c = 15
 models_seg = [] 
 kernel_type = 'timm3d_v2s_unet4b_128_128_128_dsv2_flip12_shift333p7_gd1p5_mixup1_lr1e3_20x50ep'
 backbone = 'tf_efficientnetv2_s_in21ft1k'
-model_dir_seg = 'C:/Isofh/Spine_Fracture_Deploy/backend/seg-v2s-0911'
+model_dir_seg = 'ml_models/seg-v2s-0911'
 n_blocks = 4
 for fold in range(5):
     model = TimmSegModel(backbone, pretrained=False)
@@ -58,7 +58,7 @@ print(f'Loading success {len(models_seg)} models')
 
 # Stage 2: Classifier Type 1
 kernel_type = '0920_1bonev2_effv2s_224_15_6ch_augv2_mixupp5_drl3_rov1p2_bs8_lr23e6_eta23e6_75ep'
-model_dir_cls = 'C:/Isofh/Spine_Fracture_Deploy/backend/rsna-stage2-type1-v2s-224/'
+model_dir_cls = 'ml_models/rsna-stage2-type1-v2s-224/'
 backbone = 'tf_efficientnetv2_s_in21ft1k'
 in_chans = 6
 models_cls1 = []
@@ -77,7 +77,7 @@ print(f'Loading success {len(models_cls1)} models')
 
 # Stage 2: Classifier Type 2
 kernel_type = '0920_2d_lstmv22headv2_convnn_224_15_6ch_8flip_augv2_drl3_rov1p2_rov3p2_bs4_lr6e6_eta6e6_lw151_50ep'
-model_dir_cls = 'C:/Isofh/Spine_Fracture_Deploy/backend/rsna-stage2-type2-convnn-224/'
+model_dir_cls = 'ml_models/rsna-stage2-type2-convnn-224/'
 backbone = 'convnext_nano'
 in_chans = 6
 models_cls2 = []
@@ -102,12 +102,13 @@ class call_model(APIView):
 
     def post(sefl, request):
         message = []
-        fss = CustomFileSystemStorage()
+        fss = CustomFileSystemStorage(location=settings.UPLOADS_ROOT)
         # try: 
 
-        file_olds = os.listdir(settings.MEDIA_ROOT)
-        for file_old in file_olds:
-            os.remove(os.path.join(settings.MEDIA_ROOT , file_old))
+        file_olds = os.listdir(settings.UPLOADS_ROOT)
+        if len(file_olds) > 0:
+            for file_old in file_olds:
+                os.remove(os.path.join(settings.UPLOADS_ROOT , file_old))
 
         files = request.FILES.getlist('file')
         num_slice = len(files)
@@ -115,7 +116,7 @@ class call_model(APIView):
             message.append(f.name)
             _dcm = fss.save(f.name, f)
 
-        path_dcm = str(settings.MEDIA_ROOT)
+        path_dcm = str(settings.UPLOADS_ROOT)
 
         outputs1 = []
         outputs2 = []
@@ -187,13 +188,13 @@ class call_model(APIView):
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
             if PRED1[0, ci] > 0.5:
                 imag, ndet = yolov6_model.infer(img, conf_thres=0.4, iou_thres=0.45)    
-                cv2.imwrite(path_dcm + f"/{cid_slices[ci][7]}.png", imag)
-                url_slices.append(fss.url(imag))
+                write_path = path_dcm + f"/{cid_slices[ci][7]}.png"
+                cv2.imwrite(write_path, imag)
             else:
-                cv2.imwrite(path_dcm + f"/{cid_slices[ci][7]}.png", img)
-                url_slices.append(fss.url(img))
+                write_path = path_dcm + f"/{cid_slices[ci][7]}.png"
+                cv2.imwrite(write_path, img)
             
-            url_slices.append(f"/media/{cid_slices[ci][7]}.png")
+            url_slices.append(f"/uploads/{cid_slices[ci][7]}.png")
 
         # pred_1 = [0, 0, 0, 1, 0, 1, 1]   
         # pred_2 = 1 
@@ -206,7 +207,7 @@ class call_model(APIView):
         #     img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         #     cv2.imwrite(path_dcm + f"/{ci}.png", img)
         #     url_slices.append(f"/media/{ci}.png")
-
+        print("OKOKOK")
         return Response(
                 {   
                     'num_slice': num_slice,  
