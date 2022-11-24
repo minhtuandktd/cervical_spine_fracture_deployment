@@ -128,7 +128,7 @@ class call_model(APIView):
         image = image / 255.
         image = np.expand_dims(image, 0)
         img = torch.tensor(image).float()
-
+        print("Ok")
         with torch.no_grad():
             img = img.to(device)
             # SEG
@@ -196,20 +196,8 @@ class call_model(APIView):
             
             url_slices.append(f"/uploads/{cid_slices[ci][7]}.png")
 
-        # pred_1 = [0, 0, 0, 1, 0, 1, 1]   
-        # pred_2 = 1 
-        # for ci in range(7):
-        #     dicom = pydicom.dcmread(t_paths[ci])
-        #     img = apply_voi_lut(dicom.pixel_array, dicom)
-        #     img = img - np.min(img)
-        #     img = img/(np.max(img) + 1e-4)
-        #     img = (img*255).astype(np.uint8)
-        #     img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-        #     cv2.imwrite(path_dcm + f"/{ci}.png", img)
-        #     url_slices.append(f"/media/{ci}.png")
         print("OKOKOK")
-        return Response(
-                {   
+        return Response({   
                     'num_slice': num_slice,  
                     'pred1' : pred_1,
                     'pred2' : pred_2, 
@@ -220,8 +208,7 @@ class call_model(APIView):
                     'url_c5' : url_slices[4],
                     'url_c6' : url_slices[5],
                     'url_c7' : url_slices[6],        
-                },
-            )
+                })
 
 
         # except:
