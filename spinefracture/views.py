@@ -194,20 +194,34 @@ class call_model(APIView):
                 write_path = path_dcm + f"/{cid_slices[ci][7]}.png"
                 cv2.imwrite(write_path, img)
             
-            url_slices.append(f"/uploads/{cid_slices[ci][7]}.png")
+            url_slices.append(f"api/v1/uploads/{cid_slices[ci][7]}.png")
 
-        print("OKOKOK")
+        listResult = []
+        print(type(pred_1))
+        for i in range(7):
+            listResult.append({
+                "name": f"C{i+1}",
+                "url":url_slices[i],
+                "acc":pred_1[0][i]
+            })
+        print(listResult)
+        # print(len(pred_1), len(url_slices))
+        # return Response({   
+        #             'num_slice': num_slice,  
+        #             'pred1' : pred_1,
+        #             'pred2' : pred_2, 
+        #             'url_c1' : url_slices[0], 
+        #             'url_c2' : url_slices[1],
+        #             'url_c3' : url_slices[2],
+        #             'url_c4' : url_slices[3],
+        #             'url_c5' : url_slices[4],
+        #             'url_c6' : url_slices[5],
+        #             'url_c7' : url_slices[6],        
+        #         })
         return Response({   
                     'num_slice': num_slice,  
-                    'pred1' : pred_1,
-                    'pred2' : pred_2, 
-                    'url_c1' : url_slices[0], 
-                    'url_c2' : url_slices[1],
-                    'url_c3' : url_slices[2],
-                    'url_c4' : url_slices[3],
-                    'url_c5' : url_slices[4],
-                    'url_c6' : url_slices[5],
-                    'url_c7' : url_slices[6],        
+                    'resultSummaryAcc' : pred_2, 
+                    'resultImgs':listResult
                 })
 
 

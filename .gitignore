@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 ml_models/
+*.dcm
+!spec/*.dcm
